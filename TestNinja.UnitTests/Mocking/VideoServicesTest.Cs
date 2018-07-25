@@ -12,14 +12,16 @@ namespace TestNinja.UnitTests.Mocking
     [TestFixture]
     class VideoServicesTests
     {
-        public Mock<IFileReader> _fileReader { get; private set; }
-        public VideoService _videoService { get; private set; }
+        private Mock<IFileReader> _fileReader;
+        private Mock<IVideoRepository> _repository;
+        private VideoService _videoService;
 
         [SetUp]
         public void Setup()
         {
             _fileReader = new Mock<IFileReader>();
-            _videoService = new VideoService(_fileReader.Object);
+            _repository = new Mock<IVideoRepository>();
+            _videoService = new VideoService(_fileReader.Object, _repository.Object);
         }
 
         [Test]
@@ -30,6 +32,34 @@ namespace TestNinja.UnitTests.Mocking
             var result = _videoService.ReadVideoTitle();
 
             Assert.That(result, Does.Contain("error").IgnoreCase);
+        }
+
+
+        [Test]
+        public void GetUnprocessedVideosAsCSV_AllVideosAreProcessed_ReturnEmptyString()
+        {
+           _repository.Setup(r => r.GetUnprocessedVideos()).Returns(new List<Video>());
+
+           var results =  _videoService.GetUnprocessedVideosAsCsv();
+
+           Assert.That(results, Is.EqualTo(""));
+
+        }
+
+
+        [Test]
+        public void GetUnprocessedVideosAsCSV_SomeVideosAreProcessed_ReturnUnprocessedVideos()
+        {
+            _repository.Setup(r => r.GetUnprocessedVideos()).Returns(new List<Video>
+            {
+                new Video() { Id = 1, Title = "House on Haunted Hill"  },
+                new Video() { Id = 2, Title = "Shrek"},
+                new Video() { Id = 3 }
+            });
+
+            var result = _videoService.GetUnprocessedVideosAsCsv();
+
+            Assert.That(result, Is.EqualTo("1,2,3"));
         }
 
     }
