@@ -35,8 +35,7 @@ namespace TestNinja.Mocking
             foreach (var v in videos)
                 videoIds.Add(v.Id);
 
-            // return String.Join(",", videoIds);
-            return "1";
+            return String.Join(",", videoIds);
         }
     }
 
